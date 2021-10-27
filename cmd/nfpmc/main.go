@@ -35,6 +35,8 @@ func main() {
 		symlinkFiles StringSlice
 
 		noDebSystemdRestart bool
+
+		overwrite bool
 	)
 
 	flag.CommandLine.SortFlags = false
@@ -45,6 +47,7 @@ func main() {
 	flag.VarP(&p.OutputType, "output-type", "t", "the type of package you want to create (rpm deb apk)")
 	flag.StringVar(&p.OutDir, "target", "", "(OPTIONAL) dir for store package")
 
+	flag.BoolVarP(&overwrite, "force", "f", false, "Force output even if it will overwrite an existing file")
 	flag.StringVarP(&p.OutName, "package", "p", "NAME-VERSION-ITERATION.ARCH.rpm", "The package file path to output (use NAME, VERSION, ITERATION and ARCH for substitution).")
 	flag.StringVarP(&p.Info.Name, "name", "n", "", "The name to give to the package")
 	flag.StringVarP(&p.Info.Version, "version", "v", "", "The version to give to the package")
@@ -149,7 +152,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	packageName, err := p.Do()
+	packageName, err := p.Do(overwrite)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		os.Exit(1)

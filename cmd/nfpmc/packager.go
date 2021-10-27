@@ -202,11 +202,33 @@ func rewriteFileName(name string, filesMap StringMap) (string, error) {
 	return "", fmt.Errorf("can't rewrite %s", name)
 }
 
+func isDir(name string) (bool, error) {
+	fi, err := os.Stat(name)
+	if err != nil {
+		return false, err
+	}
+	if fi.IsDir() {
+		return true, nil
+	}
+	return false, nil
+}
+
+func expandDir(name string) ([]string, error) {
+	ok, err := isDir(name)
+	if err != nil {
+		return nil, err
+	}
+	if ok {
+
+	}
+	return []string{name}, nil
+}
+
 func (p *Packager) AddFiles(fileS StringSlice) error {
 	for _, f := range fileS {
 		fileRemap := strings.Split(f, "=")
 		if len(fileRemap) > 2 {
-			return fmt.Errorf("filemap is invalid: %s\n", f)
+			return fmt.Errorf("filemap is invalid: %s", f)
 		}
 
 		var v string
@@ -216,7 +238,7 @@ func (p *Packager) AddFiles(fileS StringSlice) error {
 			v = "/" + fileRemap[0]
 		}
 		if _, ok := p.FilesMap[v]; ok {
-			return fmt.Errorf("filemap produce duplicate: %s\n", v)
+			return fmt.Errorf("filemap produce duplicate: %s", v)
 		}
 		c := &files.Content{Source: fileRemap[0], Destination: v, Type: defaultStr}
 		p.Info.Contents = append(p.Info.Contents, c)
@@ -229,10 +251,10 @@ func (p *Packager) AddSymlinks(fileS StringSlice) error {
 	for _, f := range fileS {
 		fileRemap := strings.Split(f, "=")
 		if len(fileRemap) != 2 {
-			return fmt.Errorf("symlink is invalid: %s\n", f)
+			return fmt.Errorf("symlink is invalid: %s", f)
 		}
 		if _, ok := p.FilesMap[fileRemap[1]]; ok {
-			return fmt.Errorf("symlink try to overwrite existing: %s\n", fileRemap[1])
+			return fmt.Errorf("symlink try to overwrite existing: %s", fileRemap[1])
 		}
 		c := &files.Content{Source: fileRemap[0], Destination: fileRemap[1], Type: symlinkStr}
 		p.Info.Contents = append(p.Info.Contents, c)
@@ -283,7 +305,15 @@ func (p *Packager) formatOutName(packager nfpm.Packager) string {
 	return s
 }
 
-func (p *Packager) Do() (string, error) {
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+
+func (p *Packager) Do(overwrite bool) (string, error) {
 	packager, err := nfpm.Get(p.OutputType.String())
 	if err != nil {
 		return "", err
@@ -305,6 +335,16 @@ func (p *Packager) Do() (string, error) {
 		p.Info.Target = outName
 	} else {
 		p.Info.Target = path.Join(p.OutDir, outName)
+	}
+
+	if fileExists(p.Info.Target) {
+		if overwrite {
+			if err := os.Remove(p.Info.Target); err != nil {
+				return p.Info.Target, err
+			}
+		} else {
+			return p.Info.Target, fmt.Errorf("%s already exist", p.Info.Target)
+		}
 	}
 
 	f, err := os.Create(p.Info.Target)

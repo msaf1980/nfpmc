@@ -75,8 +75,10 @@ func TestPackage(t *testing.T) {
 	// Init files list
 	verifyContent := files.Contents{
 		&files.Content{Source: "out/test-example", Destination: "/usr/bin/test-example", Type: defaultStr},
-		&files.Content{Source: "conf/test-example.conf", Destination: "/etc/test-example.conf", Type: defaultStr},
-		&files.Content{Source: "docs/test-example.txt", Destination: "/usr/share/test/test-example.txt", Type: defaultStr},
+		// &files.Content{Source: "conf/test-example.conf", Destination: "/etc/test-example.conf", Type: defaultStr},
+		// &files.Content{Source: "docs/test-example.txt", Destination: "/usr/share/test/test-example.txt", Type: defaultStr},
+		&files.Content{Source: "conf/", Destination: "/etc/", Type: defaultStr},
+		&files.Content{Source: "docs/", Destination: "/usr/share/test/", Type: defaultStr},
 	}
 	err = p.AddFiles([]string{"out/test-example=/usr/bin/test-example", "conf/=/etc/", "docs/=/usr/share/test/"})
 	assert.NoErrorf(t, err, "Package.AddFiles")
@@ -85,8 +87,10 @@ func TestPackage(t *testing.T) {
 	// Add symlink
 	verifyContent = files.Contents{
 		&files.Content{Source: "out/test-example", Destination: "/usr/bin/test-example", Type: defaultStr},
-		&files.Content{Source: "conf/test-example.conf", Destination: "/etc/test-example.conf", Type: defaultStr},
-		&files.Content{Source: "docs/test-example.txt", Destination: "/usr/share/test/test-example.txt", Type: defaultStr},
+		// &files.Content{Source: "conf/test-example.conf", Destination: "/etc/test-example.conf", Type: defaultStr},
+		// &files.Content{Source: "docs/test-example.txt", Destination: "/usr/share/test/test-example.txt", Type: defaultStr},
+		&files.Content{Source: "conf/", Destination: "/etc/", Type: defaultStr},
+		&files.Content{Source: "docs/", Destination: "/usr/share/test/", Type: defaultStr},
 		&files.Content{Source: "/usr/bin/test-example", Destination: "/usr/bin/test-link", Type: symlinkStr},
 	}
 	err = p.AddSymlinks([]string{"/usr/bin/test-example=/usr/bin/test-link"})
@@ -102,8 +106,10 @@ func TestPackage(t *testing.T) {
 	// Set config
 	verifyContent = files.Contents{
 		&files.Content{Source: "out/test-example", Destination: "/usr/bin/test-example", Type: defaultStr},
-		&files.Content{Source: "conf/test-example.conf", Destination: "/etc/test-example.conf", Type: configStr},
-		&files.Content{Source: "docs/test-example.txt", Destination: "/usr/share/test/test-example.txt", Type: defaultStr},
+		// &files.Content{Source: "conf/test-example.conf", Destination: "/etc/test-example.conf", Type: configStr},
+		// &files.Content{Source: "docs/test-example.txt", Destination: "/usr/share/test/test-example.txt", Type: defaultStr},
+		&files.Content{Source: "conf/", Destination: "/etc/", Type: configStr},
+		&files.Content{Source: "docs/", Destination: "/usr/share/test/", Type: defaultStr},
 		&files.Content{Source: "/usr/bin/test-example", Destination: "/usr/bin/test-link", Type: symlinkStr},
 	}
 	err = p.SetConfigFiles([]string{"/etc"})
@@ -117,8 +123,10 @@ func TestPackage(t *testing.T) {
 	// Set config
 	verifyContent = files.Contents{
 		&files.Content{Source: "out/test-example", Destination: "/usr/bin/test-example", Type: defaultStr},
-		&files.Content{Source: "conf/test-example.conf", Destination: "/etc/test-example.conf", Type: configStr},
-		&files.Content{Source: "docs/test-example.txt", Destination: "/usr/share/test/test-example.txt", Type: docStr},
+		// &files.Content{Source: "conf/test-example.conf", Destination: "/etc/test-example.conf", Type: configStr},
+		// &files.Content{Source: "docs/test-example.txt", Destination: "/usr/share/test/test-example.txt", Type: docStr},
+		&files.Content{Source: "conf/", Destination: "/etc/", Type: configStr},
+		&files.Content{Source: "docs/", Destination: "/usr/share/test/", Type: docStr},
 		&files.Content{Source: "/usr/bin/test-example", Destination: "/usr/bin/test-link", Type: symlinkStr},
 	}
 	err = p.SetDocFiles([]string{"/usr/share/test/test-example.txt"})

@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"syscall"
 
@@ -193,14 +195,14 @@ func (p *Packager) Validate() error {
 	return p.Info.Validate()
 }
 
-func rewriteFileName(name string, filesMap StringMap) (string, error) {
-	for k, v := range filesMap {
-		if strings.HasPrefix(name, k) {
-			return v + name[len(k):], nil
-		}
-	}
-	return "", fmt.Errorf("can't rewrite %s", name)
-}
+// func rewriteFileName(name string, filesMap StringMap) (string, error) {
+// 	for k, v := range filesMap {
+// 		if strings.HasPrefix(name, k) {
+// 			return v + name[len(k):], nil
+// 		}
+// 	}
+// 	return "", fmt.Errorf("can't rewrite %s", name)
+// }
 
 func isDir(name string) (bool, error) {
 	fi, err := os.Stat(name)
@@ -213,15 +215,70 @@ func isDir(name string) (bool, error) {
 	return false, nil
 }
 
-func expandDir(name string) ([]string, error) {
-	ok, err := isDir(name)
+func expandDir(dir string) ([]string, error) {
+	var files []string
+
+	fs, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return nil, err
 	}
-	if ok {
 
+	for _, f := range fs {
+		fName := path.Join(dir, f.Name())
+		if ok, err := isDir(fName); err != nil {
+			return nil, err
+		} else if ok {
+			if filesDir, err := expandDir(fName); err == nil {
+				files = append(files, filesDir...)
+			} else {
+				return nil, err
+			}
+		} else {
+			files = append(files, fName)
+		}
 	}
-	return []string{name}, nil
+
+	return files, nil
+}
+
+func expand(glob string) (string, []string, error) {
+	var files []string
+	var root string
+
+	fs, err := filepath.Glob(glob)
+	if err != nil {
+		return root, nil, err
+	}
+	if len(fs) > 0 {
+		if ok, err := isDir(fs[0]); err != nil {
+			return fs[0], nil, err
+		} else if ok {
+			if strings.HasSuffix(fs[0], "/") {
+				root = fs[0]
+			} else {
+				root = fs[0] + "/"
+			}
+		} else if len(fs) == 1 && glob == fs[0] {
+			root = fs[0]
+		} else {
+			root = path.Dir(fs[0]) + "/"
+		}
+	}
+
+	for _, file := range fs {
+		if ok, err := isDir(file); err != nil {
+			return root, nil, err
+		} else if ok {
+			if filesDir, err := expandDir(file); err == nil {
+				files = append(files, filesDir...)
+			} else {
+				return root, nil, err
+			}
+		} else {
+			files = append(files, file)
+		}
+	}
+	return root, files, nil
 }
 
 func (p *Packager) AddFiles(fileS StringSlice) error {
@@ -231,18 +288,31 @@ func (p *Packager) AddFiles(fileS StringSlice) error {
 			return fmt.Errorf("filemap is invalid: %s", f)
 		}
 
-		var v string
-		if len(fileRemap) > 1 {
-			v = fileRemap[1]
-		} else {
-			v = "/" + fileRemap[0]
+		// var v string
+		// if len(fileRemap) > 1 {
+		// 	v = fileRemap[1]
+		// } else {
+		// 	v = "/" + fileRemap[0]
+		// }
+
+		root, fs, err := expand(fileRemap[0])
+		if err != nil {
+			return err
 		}
-		if _, ok := p.FilesMap[v]; ok {
-			return fmt.Errorf("filemap produce duplicate: %s", v)
+		for _, file := range fs {
+			var dest string
+			if len(fileRemap) == 1 {
+				dest = "/" + file
+			} else {
+				dest = strings.Replace(file, root, fileRemap[1], 1)
+			}
+			if _, ok := p.FilesMap[dest]; ok {
+				return fmt.Errorf("filemap produce duplicate: %s", dest)
+			}
+			c := &files.Content{Source: file, Destination: dest, Type: defaultStr}
+			p.Info.Contents = append(p.Info.Contents, c)
+			p.FilesMap[dest] = c
 		}
-		c := &files.Content{Source: fileRemap[0], Destination: v, Type: defaultStr}
-		p.Info.Contents = append(p.Info.Contents, c)
-		p.FilesMap[v] = c
 	}
 	return nil
 }

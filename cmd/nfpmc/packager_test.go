@@ -14,45 +14,45 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_rewriteFileName(t *testing.T) {
-	tests := []struct {
-		name     string
-		filesMap StringMap
-		want     string
-		wantErr  bool
-	}{
-		{
-			name:     "out/usr/bin/test",
-			filesMap: StringMap{"out/": "/", "conf/": "/etc/", "doc/": "/usr/share/test"},
-			want:     "/usr/bin/test",
-			wantErr:  false,
-		},
-		{
-			name:     "conf/test.conf",
-			filesMap: StringMap{"out/": "/", "conf/": "/etc/", "doc/": "/usr/share/test"},
-			want:     "/etc/test.conf",
-			wantErr:  false,
-		},
-		{
-			name:     "none/usr/bin/test",
-			filesMap: StringMap{"out/": "/", "conf/": "/etc/", "doc/": "/usr/share/test"},
-			want:     "",
-			wantErr:  true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := rewriteFileName(tt.name, tt.filesMap)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("rewriteFileName(%s) error = %v, wantErr %v", tt.name, err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("rewriteFileName(%s) = %v, want %v", tt.name, got, tt.want)
-			}
-		})
-	}
-}
+// func Test_rewriteFileName(t *testing.T) {
+// 	tests := []struct {
+// 		name     string
+// 		filesMap StringMap
+// 		want     string
+// 		wantErr  bool
+// 	}{
+// 		{
+// 			name:     "out/usr/bin/test",
+// 			filesMap: StringMap{"out/": "/", "conf/": "/etc/", "doc/": "/usr/share/test"},
+// 			want:     "/usr/bin/test",
+// 			wantErr:  false,
+// 		},
+// 		{
+// 			name:     "conf/test.conf",
+// 			filesMap: StringMap{"out/": "/", "conf/": "/etc/", "doc/": "/usr/share/test"},
+// 			want:     "/etc/test.conf",
+// 			wantErr:  false,
+// 		},
+// 		{
+// 			name:     "none/usr/bin/test",
+// 			filesMap: StringMap{"out/": "/", "conf/": "/etc/", "doc/": "/usr/share/test"},
+// 			want:     "",
+// 			wantErr:  true,
+// 		},
+// 	}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			got, err := rewriteFileName(tt.name, tt.filesMap)
+// 			if (err != nil) != tt.wantErr {
+// 				t.Errorf("rewriteFileName(%s) error = %v, wantErr %v", tt.name, err, tt.wantErr)
+// 				return
+// 			}
+// 			if got != tt.want {
+// 				t.Errorf("rewriteFileName(%s) = %v, want %v", tt.name, got, tt.want)
+// 			}
+// 		})
+// 	}
+// }
 
 func TestPackage(t *testing.T) {
 	// /d, _ := diff.NewDiffer(diff.TagName("json"))
@@ -77,8 +77,8 @@ func TestPackage(t *testing.T) {
 		&files.Content{Source: "out/test-example", Destination: "/usr/bin/test-example", Type: defaultStr},
 		// &files.Content{Source: "conf/test-example.conf", Destination: "/etc/test-example.conf", Type: defaultStr},
 		// &files.Content{Source: "docs/test-example.txt", Destination: "/usr/share/test/test-example.txt", Type: defaultStr},
-		&files.Content{Source: "conf/", Destination: "/etc/", Type: defaultStr},
-		&files.Content{Source: "docs/", Destination: "/usr/share/test/", Type: defaultStr},
+		&files.Content{Source: "conf/test-example.conf", Destination: "/etc/test-example.conf", Type: defaultStr},
+		&files.Content{Source: "docs/test-example.txt", Destination: "/usr/share/test/test-example.txt", Type: defaultStr},
 	}
 	err = p.AddFiles([]string{"out/test-example=/usr/bin/test-example", "conf/=/etc/", "docs/=/usr/share/test/"})
 	assert.NoErrorf(t, err, "Package.AddFiles")
@@ -89,8 +89,8 @@ func TestPackage(t *testing.T) {
 		&files.Content{Source: "out/test-example", Destination: "/usr/bin/test-example", Type: defaultStr},
 		// &files.Content{Source: "conf/test-example.conf", Destination: "/etc/test-example.conf", Type: defaultStr},
 		// &files.Content{Source: "docs/test-example.txt", Destination: "/usr/share/test/test-example.txt", Type: defaultStr},
-		&files.Content{Source: "conf/", Destination: "/etc/", Type: defaultStr},
-		&files.Content{Source: "docs/", Destination: "/usr/share/test/", Type: defaultStr},
+		&files.Content{Source: "conf/test-example.conf", Destination: "/etc/test-example.conf", Type: defaultStr},
+		&files.Content{Source: "docs/test-example.txt", Destination: "/usr/share/test/test-example.txt", Type: defaultStr},
 		&files.Content{Source: "/usr/bin/test-example", Destination: "/usr/bin/test-link", Type: symlinkStr},
 	}
 	err = p.AddSymlinks([]string{"/usr/bin/test-example=/usr/bin/test-link"})
@@ -108,8 +108,8 @@ func TestPackage(t *testing.T) {
 		&files.Content{Source: "out/test-example", Destination: "/usr/bin/test-example", Type: defaultStr},
 		// &files.Content{Source: "conf/test-example.conf", Destination: "/etc/test-example.conf", Type: configStr},
 		// &files.Content{Source: "docs/test-example.txt", Destination: "/usr/share/test/test-example.txt", Type: defaultStr},
-		&files.Content{Source: "conf/", Destination: "/etc/", Type: configStr},
-		&files.Content{Source: "docs/", Destination: "/usr/share/test/", Type: defaultStr},
+		&files.Content{Source: "conf/test-example.conf", Destination: "/etc/test-example.conf", Type: configStr},
+		&files.Content{Source: "docs/test-example.txt", Destination: "/usr/share/test/test-example.txt", Type: defaultStr},
 		&files.Content{Source: "/usr/bin/test-example", Destination: "/usr/bin/test-link", Type: symlinkStr},
 	}
 	err = p.SetConfigFiles([]string{"/etc"})
@@ -125,8 +125,8 @@ func TestPackage(t *testing.T) {
 		&files.Content{Source: "out/test-example", Destination: "/usr/bin/test-example", Type: defaultStr},
 		// &files.Content{Source: "conf/test-example.conf", Destination: "/etc/test-example.conf", Type: configStr},
 		// &files.Content{Source: "docs/test-example.txt", Destination: "/usr/share/test/test-example.txt", Type: docStr},
-		&files.Content{Source: "conf/", Destination: "/etc/", Type: configStr},
-		&files.Content{Source: "docs/", Destination: "/usr/share/test/", Type: docStr},
+		&files.Content{Source: "conf/test-example.conf", Destination: "/etc/test-example.conf", Type: configStr},
+		&files.Content{Source: "docs/test-example.txt", Destination: "/usr/share/test/test-example.txt", Type: docStr},
 		&files.Content{Source: "/usr/bin/test-example", Destination: "/usr/bin/test-link", Type: symlinkStr},
 	}
 	err = p.SetDocFiles([]string{"/usr/share/test/test-example.txt"})

@@ -67,6 +67,7 @@ func main() {
 	flag.Var(&symlinkFiles, "symlink-files", "Create symlink.")
 
 	flag.StringVar(&p.Info.RPM.Compression, "rpm-compression", "gzip", "Compression method. gzip works on the most platform [none|xz|xzmt|gzip|bzip2].")
+	flag.StringVar(&p.Info.Platform, "rpm-os", "linux", "Compression method. gzip works on the most platform [none|xz|xzmt|gzip|bzip2].")
 
 	flag.StringVar(&p.Info.Scripts.PostInstall, "post-install", "", "(DEPRECATED) use --after-install")
 	flag.StringVar(&p.Info.Scripts.PreInstall, "pre-install", "", "(DEPRECATED) use --before-install")

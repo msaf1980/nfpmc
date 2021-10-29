@@ -191,15 +191,19 @@ func (p *Packager) Init() error {
 }
 
 func (p *Packager) Validate() error {
-	nfpm.WithDefaults(&p.Info)
 	if p.Info.Release == "0" {
-		if len(p.Info.Prerelease) > 0 {
-			p.Info.Release = p.Info.Prerelease
-			p.Info.Prerelease = ""
-		} else {
-			p.Info.Release = "1"
+		sv := strings.IndexAny(p.Info.Version, "-_")
+		if sv > 1 {
+			v := p.Info.Version
+			p.Info.Version = v[0:sv]
+			p.Info.Release = v[sv+1:]
 		}
 	}
+	if p.Info.Release == "" {
+		p.Info.Release = "1"
+	}
+
+	nfpm.WithDefaults(&p.Info)
 	return p.Info.Validate()
 }
 

@@ -192,6 +192,14 @@ func (p *Packager) Init() error {
 
 func (p *Packager) Validate() error {
 	nfpm.WithDefaults(&p.Info)
+	if p.Info.Release == "0" {
+		if len(p.Info.Prerelease) > 0 {
+			p.Info.Release = p.Info.Prerelease
+			p.Info.Prerelease = ""
+		} else {
+			p.Info.Release = "1"
+		}
+	}
 	return p.Info.Validate()
 }
 

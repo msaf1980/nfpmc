@@ -42,7 +42,7 @@ func main() {
 	flag.CommandLine.SortFlags = false
 
 	flag.VarP(&p.InputType, "input-type", "s", "the package type to use as input (dir)")
-	flag.StringVarP(&dir, "chdir", "C", "", "(OPTIONAL) directory for searching files (not scripts)")
+	// flag.StringVarP(&dir, "chdir", "C", "", "(OPTIONAL) directory for searching files (not scripts)")
 
 	flag.VarP(&p.OutputType, "output-type", "t", "the type of package you want to create (rpm deb apk)")
 	flag.StringVar(&p.OutDir, "target", "", "(OPTIONAL) dir for store package")
@@ -51,7 +51,7 @@ func main() {
 	flag.StringVarP(&p.OutName, "package", "p", "NAME-VERSION-ITERATION.ARCH.rpm", "The package file path to output (use NAME, VERSION, ITERATION and ARCH for substitution).")
 	flag.StringVarP(&p.Info.Name, "name", "n", "", "The name to give to the package")
 	flag.StringVarP(&p.Info.Version, "version", "v", "", "The version to give to the package")
-	flag.StringVarP(&p.Info.Release, "iteration", "i", "1", "The iteration to give to the package. RPM calls this the 'release'")
+	flag.StringVarP(&p.Info.Release, "iteration", "i", "0", "The iteration to give to the package. RPM calls this the 'release'")
 	flag.StringVarP(&p.Info.Arch, "architecture", "a", "", "The architecture name. Usually matches 'uname -m'")
 	flag.StringVarP(&p.Info.Platform, "platform", "P", "", "The platform name.")
 	flag.StringVarP(&p.Info.License, "license", "l", "", "(optional) license name for this package")
@@ -145,6 +145,10 @@ func main() {
 				f.Source = path.Join(dir, f.Source)
 			}
 		}
+	}
+
+	if p.OutputType.String() == "rpm" && p.Info.Arch == "amd64" {
+		p.Info.Arch = "x86_64"
 	}
 
 	err = p.Validate()
